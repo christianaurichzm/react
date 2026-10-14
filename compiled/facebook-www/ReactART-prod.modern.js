@@ -78,8 +78,6 @@ var dynamicFeatureFlags = require("ReactFeatureFlags"),
   transitionLaneExpirationMs = dynamicFeatureFlags.transitionLaneExpirationMs,
   enableSuspenseyImages = dynamicFeatureFlags.enableSuspenseyImages,
   enableViewTransition = dynamicFeatureFlags.enableViewTransition,
-  enableFragmentRefs = dynamicFeatureFlags.enableFragmentRefs,
-  enableParallelTransitions = dynamicFeatureFlags.enableParallelTransitions,
   enableViewTransitionParentEnterExit =
     dynamicFeatureFlags.enableViewTransitionParentEnterExit;
 function isFiberSuspenseAndTimedOut(fiber) {
@@ -273,7 +271,7 @@ function getHighestPriorityLanes(lanes) {
     case 32768:
     case 65536:
     case 131072:
-      return enableParallelTransitions ? lanes & -lanes : lanes & 261888;
+      return lanes & -lanes;
     case 262144:
     case 524288:
     case 1048576:
@@ -1938,7 +1936,7 @@ function createChildReconciler(shouldTrackSideEffects) {
           lanes,
           element.key
         )),
-        enableFragmentRefs && coerceRef(returnFiber, element),
+        coerceRef(returnFiber, element),
         returnFiber
       );
     if (
@@ -2363,7 +2361,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       null !== newChild &&
       newChild.type === REACT_FRAGMENT_TYPE &&
       null === newChild.key &&
-      (enableFragmentRefs ? void 0 === newChild.props.ref : 1) &&
+      void 0 === newChild.props.ref &&
       (newChild = newChild.props.children);
     if ("object" === typeof newChild && null !== newChild) {
       switch (newChild.$$typeof) {
@@ -2382,7 +2380,7 @@ function createChildReconciler(shouldTrackSideEffects) {
                       currentFirstChild,
                       newChild.props.children
                     );
-                    enableFragmentRefs && coerceRef(lanes, newChild);
+                    coerceRef(lanes, newChild);
                     lanes.return = returnFiber;
                     returnFiber = lanes;
                     break a;
@@ -2416,7 +2414,7 @@ function createChildReconciler(shouldTrackSideEffects) {
                   lanes,
                   newChild.key
                 )),
-                enableFragmentRefs && coerceRef(lanes, newChild),
+                coerceRef(lanes, newChild),
                 (lanes.return = returnFiber),
                 (returnFiber = lanes))
               : ((lanes = createFiberFromTypeAndProps(
@@ -6232,7 +6230,7 @@ function beginWork(current, workInProgress, renderLanes) {
     case 7:
       return (
         (props = workInProgress.pendingProps),
-        enableFragmentRefs && markRef(current, workInProgress),
+        markRef(current, workInProgress),
         reconcileChildren(current, workInProgress, props, renderLanes),
         workInProgress.child
       );
@@ -7313,11 +7311,9 @@ function safelyAttachRef(current, nearestMountedAncestor) {
           instanceToUse = current.stateNode;
           break;
         case 7:
-          if (enableFragmentRefs) {
-            null === current.stateNode && (current.stateNode = null);
-            instanceToUse = current.stateNode;
-            break;
-          }
+          null === current.stateNode && (current.stateNode = null);
+          instanceToUse = current.stateNode;
+          break;
         default:
           instanceToUse = current.stateNode;
       }
@@ -7729,10 +7725,6 @@ function commitBeforeMutationEffects_complete(
         (shouldFireAfterActiveInstanceBlur = !0);
     }
     switch (fiber.tag) {
-      case 0:
-      case 11:
-      case 15:
-        break;
       case 1:
         if (0 !== (flags & 1024) && null !== current) {
           isViewTransitionEligible = void 0;
@@ -7757,6 +7749,9 @@ function commitBeforeMutationEffects_complete(
         break;
       case 3:
         break;
+      case 0:
+      case 11:
+      case 15:
       case 5:
       case 26:
       case 27:
@@ -7916,9 +7911,7 @@ function commitLayoutEffectOnFiber(finishedRoot, current, finishedWork) {
         flags & 512 && safelyAttachRef(finishedWork, finishedWork.return));
       break;
     case 7:
-      enableFragmentRefs &&
-        flags & 512 &&
-        safelyAttachRef(finishedWork, finishedWork.return);
+      flags & 512 && safelyAttachRef(finishedWork, finishedWork.return);
     default:
       recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
   }
@@ -8337,16 +8330,14 @@ function commitDeletionEffectsOnFiber(
         break;
       }
     case 7:
-      if (enableFragmentRefs) {
-        offscreenSubtreeWasHidden ||
-          safelyDetachRef(deletedFiber, nearestMountedAncestor);
-        recursivelyTraverseDeletionEffects(
-          finishedRoot,
-          nearestMountedAncestor,
-          deletedFiber
-        );
-        break;
-      }
+      offscreenSubtreeWasHidden ||
+        safelyDetachRef(deletedFiber, nearestMountedAncestor);
+      recursivelyTraverseDeletionEffects(
+        finishedRoot,
+        nearestMountedAncestor,
+        deletedFiber
+      );
+      break;
     default:
       recursivelyTraverseDeletionEffects(
         finishedRoot,
@@ -8437,8 +8428,8 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         null !== current)
       )
         for (var ii = 0; ii < current.length; ii++) {
-          var _eventPayloads$ii2 = current[ii];
-          _eventPayloads$ii2.ref.impl = _eventPayloads$ii2.nextImpl;
+          var _eventPayloads$ii = current[ii];
+          _eventPayloads$ii.ref.impl = _eventPayloads$ii.nextImpl;
         }
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       commitReconciliationEffects(finishedWork);
@@ -8467,10 +8458,10 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
     case 26:
     case 27:
     case 5:
-      _eventPayloads$ii2 = offscreenDirectParentIsHidden;
+      _eventPayloads$ii = offscreenDirectParentIsHidden;
       offscreenDirectParentIsHidden = !1;
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
-      offscreenDirectParentIsHidden = _eventPayloads$ii2;
+      offscreenDirectParentIsHidden = _eventPayloads$ii;
       commitReconciliationEffects(finishedWork);
       flags & 512 &&
         (offscreenSubtreeWasHidden ||
@@ -8551,11 +8542,11 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         try {
           if (
             null !== finishedWork.memoizedState &&
-            ((_eventPayloads$ii2 = finishedWork.memoizedProps.suspenseCallback),
-            "function" === typeof _eventPayloads$ii2)
+            ((_eventPayloads$ii = finishedWork.memoizedProps.suspenseCallback),
+            "function" === typeof _eventPayloads$ii)
           ) {
             var retryQueue = finishedWork.updateQueue;
-            null !== retryQueue && _eventPayloads$ii2(new Set(retryQueue));
+            null !== retryQueue && _eventPayloads$ii(new Set(retryQueue));
           }
         } catch (error) {
           captureCommitPhaseError(finishedWork, finishedWork.return, error);
@@ -8568,7 +8559,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       break;
     case 22:
       ii = null !== finishedWork.memoizedState;
-      _eventPayloads$ii2 = null !== current && null !== current.memoizedState;
+      _eventPayloads$ii = null !== current && null !== current.memoizedState;
       retryQueue = offscreenSubtreeIsHidden;
       var prevOffscreenSubtreeWasHidden = offscreenSubtreeWasHidden,
         prevOffscreenDirectParentIsHidden$121 = offscreenDirectParentIsHidden;
@@ -8576,7 +8567,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       offscreenDirectParentIsHidden =
         prevOffscreenDirectParentIsHidden$121 || ii;
       offscreenSubtreeWasHidden =
-        prevOffscreenSubtreeWasHidden || _eventPayloads$ii2;
+        prevOffscreenSubtreeWasHidden || _eventPayloads$ii;
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden;
       offscreenDirectParentIsHidden = prevOffscreenDirectParentIsHidden$121;
@@ -8587,10 +8578,10 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         (root._visibility = ii ? root._visibility & -2 : root._visibility | 1),
         !ii ||
           null === current ||
-          _eventPayloads$ii2 ||
+          _eventPayloads$ii ||
           offscreenSubtreeIsHidden ||
           offscreenSubtreeWasHidden ||
-          ((root = _eventPayloads$ii2 || offscreenSubtreeWasHidden),
+          ((root = _eventPayloads$ii || offscreenSubtreeWasHidden),
           (lanes = offscreenSubtreeIsHidden),
           (current = offscreenSubtreeWasHidden),
           (offscreenSubtreeIsHidden = ii || offscreenSubtreeIsHidden),
@@ -8625,12 +8616,12 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
             safelyDetachRef(current, current.return)),
         (flags = pushMutationContext()),
         (ii = enableViewTransition && (lanes & 335544064) === lanes),
-        (_eventPayloads$ii2 = finishedWork.memoizedProps),
+        (_eventPayloads$ii = finishedWork.memoizedProps),
         ii &&
           "none" !==
             getViewTransitionClassName(
-              _eventPayloads$ii2.default,
-              _eventPayloads$ii2.update
+              _eventPayloads$ii.default,
+              _eventPayloads$ii.update
             ),
         recursivelyTraverseMutationEffects(root, finishedWork, lanes),
         commitReconciliationEffects(finishedWork),
@@ -8652,8 +8643,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       flags & 4 && shim$1();
       break;
     case 7:
-      enableFragmentRefs &&
-        flags & 512 &&
+      flags & 512 &&
         (offscreenSubtreeWasHidden ||
           null === current ||
           safelyDetachRef(current, current.return));
@@ -8677,19 +8667,17 @@ function commitReconciliationEffects(finishedWork) {
         }
         parentFiber = parentFiber.return;
       }
-      if (enableFragmentRefs) {
-        parentFiber = null;
-        for (var parent = finishedWork.return; null !== parent; ) {
-          if (parent && 7 === parent.tag && null !== parent.stateNode) {
-            var fragmentInstance = parent.stateNode;
-            null === parentFiber
-              ? (parentFiber = [fragmentInstance])
-              : parentFiber.push(fragmentInstance);
-          }
-          if (5 === parent.tag || 3 === parent.tag) break;
-          parent = parent.return;
+      parentFiber = null;
+      for (var parent = finishedWork.return; null !== parent; ) {
+        if (parent && 7 === parent.tag && null !== parent.stateNode) {
+          var fragmentInstance = parent.stateNode;
+          null === parentFiber
+            ? (parentFiber = [fragmentInstance])
+            : parentFiber.push(fragmentInstance);
         }
-      } else null;
+        if (5 === parent.tag || 3 === parent.tag) break;
+        parent = parent.return;
+      }
       if (null == hostParentFiber) throw Error(formatProdErrorMessage(160));
       switch (hostParentFiber.tag) {
         case 27:
@@ -8768,8 +8756,7 @@ function recursivelyTraverseDisappearLayoutEffects(parentFiber) {
         recursivelyTraverseDisappearLayoutEffects(finishedWork);
         break;
       case 7:
-        enableFragmentRefs &&
-          safelyDetachRef(finishedWork, finishedWork.return);
+        safelyDetachRef(finishedWork, finishedWork.return);
       default:
         recursivelyTraverseDisappearLayoutEffects(finishedWork);
     }
@@ -8896,8 +8883,7 @@ function recursivelyTraverseReappearLayoutEffects(
           safelyAttachRef(finishedWork, finishedWork.return));
         break;
       case 7:
-        enableFragmentRefs &&
-          safelyAttachRef(finishedWork, finishedWork.return);
+        safelyAttachRef(finishedWork, finishedWork.return);
       default:
         recursivelyTraverseReappearLayoutEffects(
           finishedRoot,
@@ -9868,10 +9854,12 @@ function performWorkOnRoot(root$jscomp$0, lanes, forceSync) {
               JSCompiler_inline_result,
               !1
             );
-            if (
-              2 !== JSCompiler_inline_result &&
-              6 !== JSCompiler_inline_result
-            ) {
+            if (6 === JSCompiler_inline_result)
+              root.errorRecoveryDisabledLanes =
+                root.errorRecoveryDisabledLanes |
+                renderWasConcurrent |
+                workInProgressDeferredLane;
+            else if (2 !== JSCompiler_inline_result) {
               if (workInProgressRootDidAttachPingListener) {
                 root.errorRecoveryDisabledLanes |= renderWasConcurrent;
                 workInProgressRootInterleavedUpdatedLanes |=
@@ -10081,8 +10069,7 @@ function markRootSuspended(
   spawnedLane,
   didAttemptEntireTree
 ) {
-  enableParallelTransitions &&
-    (suspendedLanes = getEntangledLanes(root, suspendedLanes));
+  suspendedLanes = getEntangledLanes(root, suspendedLanes);
   suspendedLanes &= ~workInProgressRootPingedLanes;
   suspendedLanes &= ~workInProgressRootInterleavedUpdatedLanes;
   root.suspendedLanes |= suspendedLanes;
@@ -11470,24 +11457,24 @@ var slice = Array.prototype.slice,
     };
     return Text;
   })(React.Component);
-var internals$jscomp$inline_1574 = {
+var internals$jscomp$inline_1583 = {
   bundleType: 0,
-  version: "19.3.0-www-modern-8f004372-20260902",
+  version: "19.3.0-www-modern-07dde64d-20261013",
   rendererPackageName: "react-art",
   currentDispatcherRef: ReactSharedInternals,
-  reconcilerVersion: "19.3.0-www-modern-8f004372-20260902"
+  reconcilerVersion: "19.3.0-www-modern-07dde64d-20261013"
 };
 if ("undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__) {
-  var hook$jscomp$inline_1575 = __REACT_DEVTOOLS_GLOBAL_HOOK__;
+  var hook$jscomp$inline_1584 = __REACT_DEVTOOLS_GLOBAL_HOOK__;
   if (
-    !hook$jscomp$inline_1575.isDisabled &&
-    hook$jscomp$inline_1575.supportsFiber
+    !hook$jscomp$inline_1584.isDisabled &&
+    hook$jscomp$inline_1584.supportsFiber
   )
     try {
-      (rendererID = hook$jscomp$inline_1575.inject(
-        internals$jscomp$inline_1574
+      (rendererID = hook$jscomp$inline_1584.inject(
+        internals$jscomp$inline_1583
       )),
-        (injectedHook = hook$jscomp$inline_1575);
+        (injectedHook = hook$jscomp$inline_1584);
     } catch (err) {}
 }
 var Path = Mode$1.Path;
@@ -11501,4 +11488,4 @@ exports.RadialGradient = RadialGradient;
 exports.Shape = TYPES.SHAPE;
 exports.Surface = Surface;
 exports.Text = Text;
-exports.version = "19.3.0-www-modern-8f004372-20260902";
+exports.version = "19.3.0-www-modern-07dde64d-20261013";
