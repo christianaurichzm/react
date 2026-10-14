@@ -7,13 +7,13 @@
  * @noflow
  * @nolint
  * @preventMunge
- * @generated SignedSource<<2403b36b852db9f514c8b8e93d958455>>
+ * @generated SignedSource<<8ef89160369f03d7555e453e17cb3a84>>
  */
 
 "use strict";
 __DEV__ &&
   (function () {
-    function JSCompiler_object_inline_createNodeMock_1194() {
+    function JSCompiler_object_inline_createNodeMock_1203() {
       return null;
     }
     function findHook(fiber, id) {
@@ -2700,7 +2700,7 @@ __DEV__ &&
             )),
           thenable.then(noop, noop),
           (thenable = index));
-      if (void 0 === thenable._debugInfo) {
+      if (void 0 === thenable._debugInfo && Object.isExtensible(thenable)) {
         thenableState = performance.now();
         trackedThenables = thenable.displayName;
         var ioInfo = {
@@ -2828,7 +2828,7 @@ __DEV__ &&
     function validateFragmentProps(element, fiber, returnFiber) {
       for (var keys = Object.keys(element.props), i = 0; i < keys.length; i++) {
         var key = keys[i];
-        if ("children" !== key && "key" !== key) {
+        if ("children" !== key && "key" !== key && "ref" !== key) {
           null === fiber &&
             ((fiber = createFiberFromElement(element, returnFiber.mode, 0)),
             (fiber._debugInfo = currentDebugInfo),
@@ -2837,7 +2837,7 @@ __DEV__ &&
             fiber,
             function (erroredKey) {
               console.error(
-                "Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.",
+                "Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key`, `ref`, and `children` props.",
                 erroredKey
               );
             },
@@ -3016,6 +3016,7 @@ __DEV__ &&
               lanes,
               element.key
             )),
+            coerceRef(current, element),
             validateFragmentProps(element, current, returnFiber),
             current
           );
@@ -3608,6 +3609,7 @@ __DEV__ &&
           null !== newChild &&
           newChild.type === REACT_FRAGMENT_TYPE &&
           null === newChild.key &&
+          void 0 === newChild.props.ref &&
           (validateFragmentProps(newChild, null, returnFiber),
           (newChild = newChild.props.children));
         if ("object" === typeof newChild && null !== newChild) {
@@ -3628,6 +3630,7 @@ __DEV__ &&
                           currentFirstChild,
                           newChild.props.children
                         );
+                        coerceRef(lanes, newChild);
                         lanes.return = returnFiber;
                         lanes._debugOwner = newChild._owner;
                         lanes._debugInfo = currentDebugInfo;
@@ -3670,6 +3673,7 @@ __DEV__ &&
                       lanes,
                       newChild.key
                     )),
+                    coerceRef(lanes, newChild),
                     (lanes.return = returnFiber),
                     (lanes._debugOwner = returnFiber),
                     (lanes._debugTask = returnFiber._debugTask),
@@ -8571,10 +8575,12 @@ __DEV__ &&
           );
         case 7:
           return (
+            (returnFiber = workInProgress.pendingProps),
+            markRef(current, workInProgress),
             reconcileChildren(
               current,
               workInProgress,
-              workInProgress.pendingProps,
+              returnFiber,
               renderLanes
             ),
             workInProgress.child
@@ -9899,6 +9905,10 @@ __DEV__ &&
               instanceToUse.ref = null;
             instanceToUse = instanceToUse.ref;
             break;
+          case 7:
+            null === finishedWork.stateNode && (finishedWork.stateNode = null);
+            instanceToUse = finishedWork.stateNode;
+            break;
           default:
             instanceToUse = finishedWork.stateNode;
         }
@@ -10097,6 +10107,17 @@ __DEV__ &&
           break;
         }
         parentFiber = parentFiber.return;
+      }
+      parentFiber = null;
+      for (var parent = finishedWork.return; null !== parent; ) {
+        if (parent && 7 === parent.tag && null !== parent.stateNode) {
+          var fragmentInstance = parent.stateNode;
+          null === parentFiber
+            ? (parentFiber = [fragmentInstance])
+            : parentFiber.push(fragmentInstance);
+        }
+        if (5 === parent.tag || 3 === parent.tag) break;
+        parent = parent.return;
       }
       if (null == hostParentFiber)
         throw Error(
@@ -10530,10 +10551,6 @@ __DEV__ &&
           current = finishedWork.alternate,
           flags = finishedWork.flags;
         switch (finishedWork.tag) {
-          case 0:
-          case 11:
-          case 15:
-            break;
           case 1:
             0 !== (flags & 1024) &&
               null !== current &&
@@ -10543,6 +10560,9 @@ __DEV__ &&
             0 !== (flags & 1024) &&
               finishedWork.stateNode.containerInfo.children.splice(0);
             break;
+          case 0:
+          case 11:
+          case 15:
           case 5:
           case 26:
           case 27:
@@ -10801,6 +10821,8 @@ __DEV__ &&
           recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
           flags & 512 && safelyAttachRef(finishedWork, finishedWork.return);
           break;
+        case 7:
+          flags & 512 && safelyAttachRef(finishedWork, finishedWork.return);
         default:
           recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
       }
@@ -11085,6 +11107,15 @@ __DEV__ &&
             deletedFiber
           );
           break;
+        case 7:
+          offscreenSubtreeWasHidden ||
+            safelyDetachRef(deletedFiber, nearestMountedAncestor);
+          recursivelyTraverseDeletionEffects(
+            finishedRoot,
+            nearestMountedAncestor,
+            deletedFiber
+          );
+          break;
         default:
           recursivelyTraverseDeletionEffects(
             finishedRoot,
@@ -11191,8 +11222,8 @@ __DEV__ &&
             null !== current)
           )
             for (var ii = 0; ii < current.length; ii++) {
-              var _eventPayloads$ii2 = current[ii];
-              _eventPayloads$ii2.ref.impl = _eventPayloads$ii2.nextImpl;
+              var _eventPayloads$ii = current[ii];
+              _eventPayloads$ii.ref.impl = _eventPayloads$ii.nextImpl;
             }
           recursivelyTraverseMutationEffects(root, finishedWork, lanes);
           commitReconciliationEffects(finishedWork);
@@ -11350,7 +11381,7 @@ __DEV__ &&
           break;
         case 22:
           ii = null !== finishedWork.memoizedState;
-          _eventPayloads$ii2 =
+          _eventPayloads$ii =
             null !== current && null !== current.memoizedState;
           if (finishedWork.mode & 1) {
             var prevOffscreenSubtreeIsHidden = offscreenSubtreeIsHidden,
@@ -11361,7 +11392,7 @@ __DEV__ &&
             offscreenDirectParentIsHidden =
               _prevOffscreenDirectParentIsHidden2 || ii;
             offscreenSubtreeWasHidden =
-              prevOffscreenSubtreeWasHidden || _eventPayloads$ii2;
+              prevOffscreenSubtreeWasHidden || _eventPayloads$ii;
             recursivelyTraverseMutationEffects(root, finishedWork, lanes);
             offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden;
             offscreenDirectParentIsHidden = _prevOffscreenDirectParentIsHidden2;
@@ -11375,11 +11406,11 @@ __DEV__ &&
               : root._visibility | OffscreenVisible),
             !ii ||
               null === current ||
-              _eventPayloads$ii2 ||
+              _eventPayloads$ii ||
               offscreenSubtreeIsHidden ||
               offscreenSubtreeWasHidden ||
               0 === (finishedWork.mode & 1) ||
-              ((root = _eventPayloads$ii2 || offscreenSubtreeWasHidden),
+              ((root = _eventPayloads$ii || offscreenSubtreeWasHidden),
               (lanes = offscreenSubtreeIsHidden),
               (current = offscreenSubtreeWasHidden),
               (offscreenSubtreeIsHidden = ii || offscreenSubtreeIsHidden),
@@ -11413,12 +11444,12 @@ __DEV__ &&
               safelyDetachRef(current, current.return));
           flags = pushMutationContext();
           ii = (lanes & 335544064) === lanes;
-          _eventPayloads$ii2 = finishedWork.memoizedProps;
+          _eventPayloads$ii = finishedWork.memoizedProps;
           ii &&
             "none" !==
               getViewTransitionClassName(
-                _eventPayloads$ii2.default,
-                _eventPayloads$ii2.update
+                _eventPayloads$ii.default,
+                _eventPayloads$ii.update
               );
           recursivelyTraverseMutationEffects(root, finishedWork, lanes);
           commitReconciliationEffects(finishedWork);
@@ -11431,6 +11462,11 @@ __DEV__ &&
           break;
         case 21:
           break;
+        case 7:
+          flags & 512 &&
+            (offscreenSubtreeWasHidden ||
+              null === current ||
+              safelyDetachRef(current, current.return));
         default:
           recursivelyTraverseMutationEffects(root, finishedWork, lanes),
             commitReconciliationEffects(finishedWork);
@@ -11587,6 +11623,8 @@ __DEV__ &&
           safelyDetachRef(finishedWork, finishedWork.return);
           recursivelyTraverseDisappearLayoutEffects(finishedWork);
           break;
+        case 7:
+          safelyDetachRef(finishedWork, finishedWork.return);
         default:
           recursivelyTraverseDisappearLayoutEffects(finishedWork);
       }
@@ -11734,6 +11772,8 @@ __DEV__ &&
           flags & 18874368 && trackNamedViewTransition(finishedWork);
           safelyAttachRef(finishedWork, finishedWork.return);
           break;
+        case 7:
+          safelyAttachRef(finishedWork, finishedWork.return);
         default:
           recursivelyTraverseReappearLayoutEffects(
             finishedRoot,
@@ -12579,10 +12619,12 @@ __DEV__ &&
                   renderWasConcurrent,
                   !1
                 );
-                if (
-                  renderWasConcurrent !== RootErrored &&
-                  renderWasConcurrent !== RootSuspendedAtTheShell
-                ) {
+                if (renderWasConcurrent === RootSuspendedAtTheShell)
+                  exitStatus.errorRecoveryDisabledLanes =
+                    exitStatus.errorRecoveryDisabledLanes |
+                    originallyAttemptedLanes |
+                    workInProgressDeferredLane;
+                else if (renderWasConcurrent !== RootErrored) {
                   if (workInProgressRootDidAttachPingListener) {
                     exitStatus.errorRecoveryDisabledLanes |=
                       originallyAttemptedLanes;
@@ -17105,10 +17147,10 @@ __DEV__ &&
     (function () {
       var internals = {
         bundleType: 1,
-        version: "19.3.0-native-fb-21c89c9f-20260901",
+        version: "19.3.0-native-fb-07dde64d-20261013",
         rendererPackageName: "react-test-renderer",
         currentDispatcherRef: ReactSharedInternals,
-        reconcilerVersion: "19.3.0-native-fb-21c89c9f-20260901"
+        reconcilerVersion: "19.3.0-native-fb-07dde64d-20261013"
       };
       internals.overrideHookState = overrideHookState;
       internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -17131,7 +17173,7 @@ __DEV__ &&
     exports._Scheduler = Scheduler;
     exports.act = act;
     exports.create = function (element, options) {
-      var createNodeMock = JSCompiler_object_inline_createNodeMock_1194,
+      var createNodeMock = JSCompiler_object_inline_createNodeMock_1203,
         isConcurrent = !1,
         isStrictMode = !1;
       "object" === typeof options &&
@@ -17254,5 +17296,5 @@ __DEV__ &&
             flushSyncWorkAcrossRoots_impl(0, !0));
       }
     };
-    exports.version = "19.3.0-native-fb-21c89c9f-20260901";
+    exports.version = "19.3.0-native-fb-07dde64d-20261013";
   })();

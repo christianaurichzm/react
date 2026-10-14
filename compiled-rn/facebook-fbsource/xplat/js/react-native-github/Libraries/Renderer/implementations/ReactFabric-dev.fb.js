@@ -7,7 +7,7 @@
  * @noflow
  * @nolint
  * @preventMunge
- * @generated SignedSource<<50ef70d0c4826640f3041af8c7116510>>
+ * @generated SignedSource<<0e54ebe9bf003800892720c766f266f9>>
  */
 
 "use strict";
@@ -43,7 +43,10 @@ __DEV__ &&
                   null != hostFiber &&
                   null !== hostFiber.stateNode &&
                   hostFiber.stateNode.node) &&
-                  nativeFabricUIManager.measure(hostFiber, callback);
+                  reactPrivateInterface.fabricUIManager.measure(
+                    hostFiber,
+                    callback
+                  );
               }
             };
           }
@@ -1291,10 +1294,13 @@ __DEV__ &&
         reactPrivateInterface.RawEventEmitter.emit(topLevelType, event);
         reactPrivateInterface.RawEventEmitter.emit("*", event);
         null == _enableNativeEventTargetEventDispatching &&
+          ((event =
+            null != reactPrivateInterface.ReactNativeFeatureFlags
+              ? reactPrivateInterface.ReactNativeFeatureFlags
+                  .enableNativeEventTargetEventDispatching
+              : null),
           (_enableNativeEventTargetEventDispatching =
-            "function" ===
-              typeof RN$isNativeEventTargetEventDispatchingEnabled &&
-            RN$isNativeEventTargetEventDispatchingEnabled());
+            "function" === typeof event && event()));
         if (_enableNativeEventTargetEventDispatching)
           null != eventTarget &&
             reactPrivateInterface.dispatchNativeEvent(
@@ -1881,9 +1887,7 @@ __DEV__ &&
     ) {
       for (; null !== child; ) {
         if (
-          ((5 === child.tag ||
-            27 === child.tag ||
-            (enableFragmentRefsTextNodes && 6 === child.tag)) &&
+          ((5 === child.tag || 27 === child.tag || 6 === child.tag) &&
             fn(child, a, b, c)) ||
           ((22 !== child.tag || null === child.memoizedState) &&
             (searchWithinHosts || (5 !== child.tag && 27 !== child.tag)) &&
@@ -1917,11 +1921,7 @@ __DEV__ &&
     ) {
       for (; null !== child; ) {
         if (child === self) state.foundSelf = !0;
-        else if (
-          5 === child.tag ||
-          27 === child.tag ||
-          (enableFragmentRefsTextNodes && 6 === child.tag)
-        ) {
+        else if (5 === child.tag || 27 === child.tag || 6 === child.tag) {
           if (state.foundSelf) return (result[1] = child), !0;
           result[0] = child;
         } else if (
@@ -4295,7 +4295,7 @@ __DEV__ &&
             )),
           thenable.then(noop, noop),
           (thenable = index));
-      if (void 0 === thenable._debugInfo) {
+      if (void 0 === thenable._debugInfo && Object.isExtensible(thenable)) {
         thenableState = performance.now();
         trackedThenables = thenable.displayName;
         var ioInfo = {
@@ -4444,11 +4444,7 @@ __DEV__ &&
     function validateFragmentProps(element, fiber, returnFiber) {
       for (var keys = Object.keys(element.props), i = 0; i < keys.length; i++) {
         var key = keys[i];
-        if (
-          "children" !== key &&
-          "key" !== key &&
-          (enableFragmentRefs ? "ref" !== key : 1)
-        ) {
+        if ("children" !== key && "key" !== key && "ref" !== key) {
           null === fiber &&
             ((fiber = createFiberFromElement(element, returnFiber.mode, 0)),
             (fiber._debugInfo = currentDebugInfo),
@@ -4456,15 +4452,10 @@ __DEV__ &&
           runWithFiberInDEV(
             fiber,
             function (erroredKey) {
-              enableFragmentRefs
-                ? console.error(
-                    "Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key`, `ref`, and `children` props.",
-                    erroredKey
-                  )
-                : console.error(
-                    "Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.",
-                    erroredKey
-                  );
+              console.error(
+                "Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key`, `ref`, and `children` props.",
+                erroredKey
+              );
             },
             key
           );
@@ -4641,7 +4632,7 @@ __DEV__ &&
               lanes,
               element.key
             )),
-            enableFragmentRefs && coerceRef(current, element),
+            coerceRef(current, element),
             validateFragmentProps(element, current, returnFiber),
             current
           );
@@ -5234,7 +5225,7 @@ __DEV__ &&
           null !== newChild &&
           newChild.type === REACT_FRAGMENT_TYPE &&
           null === newChild.key &&
-          (enableFragmentRefs ? void 0 === newChild.props.ref : 1) &&
+          void 0 === newChild.props.ref &&
           (validateFragmentProps(newChild, null, returnFiber),
           (newChild = newChild.props.children));
         if ("object" === typeof newChild && null !== newChild) {
@@ -5255,7 +5246,7 @@ __DEV__ &&
                           currentFirstChild,
                           newChild.props.children
                         );
-                        enableFragmentRefs && coerceRef(lanes, newChild);
+                        coerceRef(lanes, newChild);
                         lanes.return = returnFiber;
                         lanes._debugOwner = newChild._owner;
                         lanes._debugInfo = currentDebugInfo;
@@ -5298,7 +5289,7 @@ __DEV__ &&
                       lanes,
                       newChild.key
                     )),
-                    enableFragmentRefs && coerceRef(lanes, newChild),
+                    coerceRef(lanes, newChild),
                     (lanes.return = returnFiber),
                     (lanes._debugOwner = returnFiber),
                     (lanes._debugTask = returnFiber._debugTask),
@@ -10179,7 +10170,7 @@ __DEV__ &&
         case 7:
           return (
             (returnFiber = workInProgress.pendingProps),
-            enableFragmentRefs && markRef(current, workInProgress),
+            markRef(current, workInProgress),
             reconcileChildren(
               current,
               workInProgress,
@@ -11715,22 +11706,19 @@ __DEV__ &&
             instanceToUse = instanceToUse.ref;
             break;
           case 7:
-            if (enableFragmentRefs) {
-              null === finishedWork.stateNode &&
-                ((instanceToUse = new FragmentInstance(finishedWork)),
-                enableFragmentRefsInstanceHandles &&
-                  traverseVisibleInstancesAndTextInstances(
-                    finishedWork.child,
-                    !1,
-                    addFragmentHandleToFiber,
-                    instanceToUse,
-                    void 0,
-                    void 0
-                  ),
-                (finishedWork.stateNode = instanceToUse));
-              instanceToUse = finishedWork.stateNode;
-              break;
-            }
+            null === finishedWork.stateNode &&
+              ((instanceToUse = new FragmentInstance(finishedWork)),
+              traverseVisibleInstancesAndTextInstances(
+                finishedWork.child,
+                !1,
+                addFragmentHandleToFiber,
+                instanceToUse,
+                void 0,
+                void 0
+              ),
+              (finishedWork.stateNode = instanceToUse));
+            instanceToUse = finishedWork.stateNode;
+            break;
           default:
             instanceToUse = finishedWork.stateNode;
         }
@@ -11856,10 +11844,9 @@ __DEV__ &&
         if (isFragmentInstanceParent(parent)) {
           var childInstance = fiber.stateNode,
             fragmentInstance = parent.stateNode;
-          (enableFragmentRefsTextNodes && null == childInstance.canonical) ||
+          null != childInstance.canonical &&
             ((childInstance = getPublicInstance(childInstance)),
-            enableFragmentRefsInstanceHandles &&
-              null != childInstance.reactFragments &&
+            null != childInstance.reactFragments &&
               childInstance.reactFragments.delete(fragmentInstance));
         }
         if (isFragmentInstanceHostBoundary(parent)) break;
@@ -11890,61 +11877,60 @@ __DEV__ &&
       }
     }
     function commitPlacement(finishedWork) {
-      if (enableFragmentRefs) {
-        var JSCompiler_temp = null;
-        for (var parent = finishedWork.return; null !== parent; ) {
-          if (isFragmentInstanceParent(parent)) {
-            var fragmentInstance = parent.stateNode;
-            null === JSCompiler_temp
-              ? (JSCompiler_temp = [fragmentInstance])
-              : JSCompiler_temp.push(fragmentInstance);
-          }
-          if (isFragmentInstanceHostBoundary(parent)) break;
-          parent = parent.return;
+      for (
+        var parentFragmentInstances = null, parent = finishedWork.return;
+        null !== parent;
+
+      ) {
+        if (isFragmentInstanceParent(parent)) {
+          var fragmentInstance = parent.stateNode;
+          null === parentFragmentInstances
+            ? (parentFragmentInstances = [fragmentInstance])
+            : parentFragmentInstances.push(fragmentInstance);
         }
-      } else JSCompiler_temp = null;
-      enableFragmentRefs &&
-        commitImmutablePlacementNodeToFragmentInstances(
-          finishedWork,
-          JSCompiler_temp
-        );
+        if (isFragmentInstanceHostBoundary(parent)) break;
+        parent = parent.return;
+      }
+      commitImmutablePlacementNodeToFragmentInstances(
+        finishedWork,
+        parentFragmentInstances
+      );
     }
     function commitImmutablePlacementNodeToFragmentInstances(
       finishedWork,
       parentFragmentInstances
     ) {
-      if (enableFragmentRefs)
-        if (5 === finishedWork.tag) {
-          if (
-            (5 === finishedWork.tag ||
-              27 === finishedWork.tag ||
-              (enableFragmentRefsTextNodes && 6 === finishedWork.tag)) &&
-            null === finishedWork.alternate &&
-            null !== parentFragmentInstances
-          )
-            for (var i = 0; i < parentFragmentInstances.length; i++)
-              commitNewChildToFragmentInstance(
-                finishedWork.stateNode,
-                parentFragmentInstances[i]
-              );
-        } else if (
-          4 !== finishedWork.tag &&
-          ((finishedWork = finishedWork.child), null !== finishedWork)
+      if (5 === finishedWork.tag) {
+        if (
+          (5 === finishedWork.tag ||
+            27 === finishedWork.tag ||
+            6 === finishedWork.tag) &&
+          null === finishedWork.alternate &&
+          null !== parentFragmentInstances
         )
-          for (
-            commitImmutablePlacementNodeToFragmentInstances(
-              finishedWork,
-              parentFragmentInstances
-            ),
-              finishedWork = finishedWork.sibling;
-            null !== finishedWork;
+          for (var i = 0; i < parentFragmentInstances.length; i++)
+            commitNewChildToFragmentInstance(
+              finishedWork.stateNode,
+              parentFragmentInstances[i]
+            );
+      } else if (
+        4 !== finishedWork.tag &&
+        ((finishedWork = finishedWork.child), null !== finishedWork)
+      )
+        for (
+          commitImmutablePlacementNodeToFragmentInstances(
+            finishedWork,
+            parentFragmentInstances
+          ),
+            finishedWork = finishedWork.sibling;
+          null !== finishedWork;
 
-          )
-            commitImmutablePlacementNodeToFragmentInstances(
-              finishedWork,
-              parentFragmentInstances
-            ),
-              (finishedWork = finishedWork.sibling);
+        )
+          commitImmutablePlacementNodeToFragmentInstances(
+            finishedWork,
+            parentFragmentInstances
+          ),
+            (finishedWork = finishedWork.sibling);
     }
     function commitHostPortalContainerChildren(
       portal,
@@ -12472,10 +12458,6 @@ __DEV__ &&
           current = finishedWork.alternate,
           flags = finishedWork.flags;
         switch (finishedWork.tag) {
-          case 0:
-          case 11:
-          case 15:
-            break;
           case 1:
             0 !== (flags & 1024) &&
               null !== current &&
@@ -12483,6 +12465,9 @@ __DEV__ &&
             break;
           case 3:
             break;
+          case 0:
+          case 11:
+          case 15:
           case 5:
           case 26:
           case 27:
@@ -12754,9 +12739,7 @@ __DEV__ &&
           flags & 512 && safelyAttachRef(finishedWork, finishedWork.return);
           break;
         case 7:
-          enableFragmentRefs &&
-            flags & 512 &&
-            safelyAttachRef(finishedWork, finishedWork.return);
+          flags & 512 && safelyAttachRef(finishedWork, finishedWork.return);
         default:
           recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
       }
@@ -12849,12 +12832,9 @@ __DEV__ &&
         case 5:
           offscreenSubtreeWasHidden ||
             safelyDetachRef(deletedFiber, nearestMountedAncestor),
-            enableFragmentRefs &&
-              commitFragmentInstanceDeletionEffects(deletedFiber);
+            commitFragmentInstanceDeletionEffects(deletedFiber);
         case 6:
-          enableFragmentRefs &&
-            enableFragmentRefsTextNodes &&
-            6 === deletedFiber.tag &&
+          6 === deletedFiber.tag &&
             commitFragmentInstanceDeletionEffects(deletedFiber);
           recursivelyTraverseDeletionEffects(
             finishedRoot,
@@ -12960,16 +12940,14 @@ __DEV__ &&
           );
           break;
         case 7:
-          if (enableFragmentRefs) {
-            offscreenSubtreeWasHidden ||
-              safelyDetachRef(deletedFiber, nearestMountedAncestor);
-            recursivelyTraverseDeletionEffects(
-              finishedRoot,
-              nearestMountedAncestor,
-              deletedFiber
-            );
-            break;
-          }
+          offscreenSubtreeWasHidden ||
+            safelyDetachRef(deletedFiber, nearestMountedAncestor);
+          recursivelyTraverseDeletionEffects(
+            finishedRoot,
+            nearestMountedAncestor,
+            deletedFiber
+          );
+          break;
         default:
           recursivelyTraverseDeletionEffects(
             finishedRoot,
@@ -13088,8 +13066,8 @@ __DEV__ &&
             null !== current)
           )
             for (var ii = 0; ii < current.length; ii++) {
-              var _eventPayloads$ii2 = current[ii];
-              _eventPayloads$ii2.ref.impl = _eventPayloads$ii2.nextImpl;
+              var _eventPayloads$ii = current[ii];
+              _eventPayloads$ii.ref.impl = _eventPayloads$ii.nextImpl;
             }
           recursivelyTraverseMutationEffects(root, finishedWork, lanes);
           commitReconciliationEffects(finishedWork);
@@ -13213,9 +13191,9 @@ __DEV__ &&
               null !== finishedWork.memoizedState &&
                 ((ii = finishedWork.memoizedProps.suspenseCallback),
                 "function" === typeof ii
-                  ? ((_eventPayloads$ii2 = finishedWork.updateQueue),
-                    null !== _eventPayloads$ii2 &&
-                      ii(new Set(_eventPayloads$ii2)))
+                  ? ((_eventPayloads$ii = finishedWork.updateQueue),
+                    null !== _eventPayloads$ii &&
+                      ii(new Set(_eventPayloads$ii)))
                   : void 0 !== ii &&
                     console.error("Unexpected type for suspenseCallback."));
             } catch (error) {
@@ -13229,18 +13207,18 @@ __DEV__ &&
           break;
         case 22:
           ii = null !== finishedWork.memoizedState;
-          _eventPayloads$ii2 =
+          _eventPayloads$ii =
             null !== current && null !== current.memoizedState;
           if (finishedWork.mode & 1) {
             var prevOffscreenSubtreeIsHidden = offscreenSubtreeIsHidden,
               prevOffscreenSubtreeWasHidden = offscreenSubtreeWasHidden;
             offscreenSubtreeIsHidden = prevOffscreenSubtreeIsHidden || ii;
             offscreenSubtreeWasHidden =
-              prevOffscreenSubtreeWasHidden || _eventPayloads$ii2;
+              prevOffscreenSubtreeWasHidden || _eventPayloads$ii;
             recursivelyTraverseMutationEffects(root, finishedWork, lanes);
             offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden;
             offscreenSubtreeIsHidden = prevOffscreenSubtreeIsHidden;
-            _eventPayloads$ii2 &&
+            _eventPayloads$ii &&
               !ii &&
               !prevOffscreenSubtreeIsHidden &&
               !prevOffscreenSubtreeWasHidden &&
@@ -13262,11 +13240,11 @@ __DEV__ &&
               : root._visibility | OffscreenVisible),
             !ii ||
               null === current ||
-              _eventPayloads$ii2 ||
+              _eventPayloads$ii ||
               offscreenSubtreeIsHidden ||
               offscreenSubtreeWasHidden ||
               0 === (finishedWork.mode & 1) ||
-              ((root = _eventPayloads$ii2 || offscreenSubtreeWasHidden),
+              ((root = _eventPayloads$ii || offscreenSubtreeWasHidden),
               (lanes = offscreenSubtreeIsHidden),
               (current = offscreenSubtreeWasHidden),
               (offscreenSubtreeIsHidden = ii || offscreenSubtreeIsHidden),
@@ -13308,10 +13286,10 @@ __DEV__ &&
               safelyDetachRef(current, current.return));
           flags = pushMutationContext();
           ii = inUpdateViewTransition;
-          _eventPayloads$ii2 = (lanes & 335544064) === lanes;
+          _eventPayloads$ii = (lanes & 335544064) === lanes;
           prevOffscreenSubtreeIsHidden = finishedWork.memoizedProps;
           inUpdateViewTransition =
-            _eventPayloads$ii2 &&
+            _eventPayloads$ii &&
             "none" !==
               getViewTransitionClassName(
                 prevOffscreenSubtreeIsHidden.default,
@@ -13319,7 +13297,7 @@ __DEV__ &&
               );
           recursivelyTraverseMutationEffects(root, finishedWork, lanes);
           commitReconciliationEffects(finishedWork);
-          _eventPayloads$ii2 &&
+          _eventPayloads$ii &&
             null !== current &&
             viewTransitionMutationContext &&
             (finishedWork.flags |= 4);
@@ -13330,14 +13308,13 @@ __DEV__ &&
         case 21:
           break;
         case 7:
-          enableFragmentRefs &&
-            (flags & 512 &&
-              (offscreenSubtreeWasHidden ||
-                null === current ||
-                safelyDetachRef(current, current.return)),
+          flags & 512 &&
+            (offscreenSubtreeWasHidden ||
+              null === current ||
+              safelyDetachRef(current, current.return)),
             current &&
               null !== current.stateNode &&
-              (current.stateNode._fragmentFiber = finishedWork));
+              (current.stateNode._fragmentFiber = finishedWork);
         default:
           recursivelyTraverseMutationEffects(root, finishedWork, lanes),
             commitReconciliationEffects(finishedWork);
@@ -13516,15 +13493,12 @@ __DEV__ &&
         case 27:
         case 5:
           safelyDetachRef(finishedWork, finishedWork.return);
-          !enableFragmentRefs ||
-            (5 !== finishedWork.tag && 27 !== finishedWork.tag) ||
+          (5 !== finishedWork.tag && 27 !== finishedWork.tag) ||
             commitFragmentInstanceDeletionEffects(finishedWork);
           recursivelyTraverseDisappearLayoutEffects(finishedWork);
           break;
         case 6:
-          enableFragmentRefs &&
-            enableFragmentRefsTextNodes &&
-            commitFragmentInstanceDeletionEffects(finishedWork);
+          commitFragmentInstanceDeletionEffects(finishedWork);
           break;
         case 26:
           safelyDetachRef(finishedWork, finishedWork.return);
@@ -13541,8 +13515,7 @@ __DEV__ &&
           recursivelyTraverseDisappearLayoutEffects(finishedWork);
           break;
         case 7:
-          enableFragmentRefs &&
-            safelyDetachRef(finishedWork, finishedWork.return);
+          safelyDetachRef(finishedWork, finishedWork.return);
         default:
           recursivelyTraverseDisappearLayoutEffects(finishedWork);
       }
@@ -13620,8 +13593,7 @@ __DEV__ &&
           break;
         case 27:
         case 5:
-          !enableFragmentRefs ||
-            (5 !== finishedWork.tag && 27 !== finishedWork.tag) ||
+          (5 !== finishedWork.tag && 27 !== finishedWork.tag) ||
             commitFragmentInstanceInsertionEffects(finishedWork);
           recursivelyTraverseReappearLayoutEffects(
             finishedRoot,
@@ -13635,9 +13607,7 @@ __DEV__ &&
           safelyAttachRef(finishedWork, finishedWork.return);
           break;
         case 6:
-          enableFragmentRefs &&
-            enableFragmentRefsTextNodes &&
-            commitFragmentInstanceInsertionEffects(finishedWork);
+          commitFragmentInstanceInsertionEffects(finishedWork);
           break;
         case 26:
           recursivelyTraverseReappearLayoutEffects(
@@ -13714,8 +13684,7 @@ __DEV__ &&
           safelyAttachRef(finishedWork, finishedWork.return);
           break;
         case 7:
-          enableFragmentRefs &&
-            safelyAttachRef(finishedWork, finishedWork.return);
+          safelyAttachRef(finishedWork, finishedWork.return);
         default:
           recursivelyTraverseReappearLayoutEffects(
             finishedRoot,
@@ -15015,10 +14984,12 @@ __DEV__ &&
                 exitStatus = workInProgressRootConcurrentErrors;
                 var wasRootDehydrated = supportsHydration;
                 startTime = renderRootSync(yieldedFiber, startTime, !1);
-                if (
-                  startTime !== RootErrored &&
-                  startTime !== RootSuspendedAtTheShell
-                ) {
+                if (startTime === RootSuspendedAtTheShell)
+                  yieldedFiber.errorRecoveryDisabledLanes =
+                    yieldedFiber.errorRecoveryDisabledLanes |
+                    lanesThatJustErrored |
+                    workInProgressDeferredLane;
+                else if (startTime !== RootErrored) {
                   if (
                     workInProgressRootDidAttachPingListener &&
                     !wasRootDehydrated
@@ -18265,19 +18236,16 @@ __DEV__ &&
       return !1;
     }
     function addFragmentHandleToFiber(child, fragmentInstance) {
-      enableFragmentRefsInstanceHandles &&
-        ((child = getPublicInstanceFromHostFiber(child)),
-        null != child && addFragmentHandleToInstance(child, fragmentInstance));
+      child = getPublicInstanceFromHostFiber(child);
+      null != child && addFragmentHandleToInstance(child, fragmentInstance);
       return !1;
     }
     function addFragmentHandleToInstance(instance, fragmentInstance) {
-      enableFragmentRefsInstanceHandles &&
-        (null == instance.reactFragments &&
-          (instance.reactFragments = new Set()),
-        instance.reactFragments.add(fragmentInstance));
+      null == instance.reactFragments && (instance.reactFragments = new Set());
+      instance.reactFragments.add(fragmentInstance);
     }
     function commitNewChildToFragmentInstance(childInstance, fragmentInstance) {
-      if (!enableFragmentRefsTextNodes || null != childInstance.canonical) {
+      if (null != childInstance.canonical) {
         var publicInstance = getPublicInstance(childInstance);
         if (null !== fragmentInstance._observers) {
           if (null == publicInstance)
@@ -18288,8 +18256,7 @@ __DEV__ &&
             observer.observe(publicInstance);
           });
         }
-        enableFragmentRefsInstanceHandles &&
-          addFragmentHandleToInstance(publicInstance, fragmentInstance);
+        addFragmentHandleToInstance(publicInstance, fragmentInstance);
       }
     }
     function nativeOnUncaughtError(error, errorInfo) {
@@ -18368,11 +18335,6 @@ __DEV__ &&
       enableObjectFiber = dynamicFlagsUntyped.enableObjectFiber,
       passChildrenWhenCloningPersistedNodes =
         dynamicFlagsUntyped.passChildrenWhenCloningPersistedNodes,
-      enableFragmentRefs = dynamicFlagsUntyped.enableFragmentRefs,
-      enableFragmentRefsInstanceHandles =
-        dynamicFlagsUntyped.enableFragmentRefsInstanceHandles,
-      enableFragmentRefsTextNodes =
-        dynamicFlagsUntyped.enableFragmentRefsTextNodes,
       enableViewTransitionForPersistenceMode =
         dynamicFlagsUntyped.enableViewTransitionForPersistenceMode,
       enableConditionalUseWarning =
@@ -21112,34 +21074,38 @@ __DEV__ &&
       commitHydratedInstance = shim$1,
       preloadResource = shim,
       suspendResource = shim,
-      _nativeFabricUIManage$1 = nativeFabricUIManager,
       fabricApplyViewTransitionName =
-        _nativeFabricUIManage$1.applyViewTransitionName,
+        reactPrivateInterface.fabricUIManager.applyViewTransitionName,
       fabricCreateViewTransitionInstance =
-        _nativeFabricUIManage$1.createViewTransitionInstance,
-      fabricStartViewTransition = _nativeFabricUIManage$1.startViewTransition,
+        reactPrivateInterface.fabricUIManager.createViewTransitionInstance,
+      fabricStartViewTransition =
+        reactPrivateInterface.fabricUIManager.startViewTransition,
       fabricStartViewTransitionReadyFinished =
-        _nativeFabricUIManage$1.startViewTransitionReadyFinished,
-      _nativeFabricUIManage = nativeFabricUIManager,
-      createNode = _nativeFabricUIManage.createNode,
-      cloneNodeWithNewChildren = _nativeFabricUIManage.cloneNodeWithNewChildren,
+        reactPrivateInterface.fabricUIManager.startViewTransitionReadyFinished,
+      createNode = reactPrivateInterface.fabricUIManager.createNode,
+      cloneNodeWithNewChildren =
+        reactPrivateInterface.fabricUIManager.cloneNodeWithNewChildren,
       cloneNodeWithNewChildrenAndProps =
-        _nativeFabricUIManage.cloneNodeWithNewChildrenAndProps,
-      cloneNodeWithNewProps = _nativeFabricUIManage.cloneNodeWithNewProps,
-      createChildNodeSet = _nativeFabricUIManage.createChildSet,
-      appendChildNode = _nativeFabricUIManage.appendChild,
-      appendChildNodeToSet = _nativeFabricUIManage.appendChildToSet,
-      completeRoot = _nativeFabricUIManage.completeRoot,
-      registerEventHandler = _nativeFabricUIManage.registerEventHandler,
+        reactPrivateInterface.fabricUIManager.cloneNodeWithNewChildrenAndProps,
+      cloneNodeWithNewProps =
+        reactPrivateInterface.fabricUIManager.cloneNodeWithNewProps,
+      createChildNodeSet = reactPrivateInterface.fabricUIManager.createChildSet,
+      appendChildNode = reactPrivateInterface.fabricUIManager.appendChild,
+      appendChildNodeToSet =
+        reactPrivateInterface.fabricUIManager.appendChildToSet,
+      completeRoot = reactPrivateInterface.fabricUIManager.completeRoot,
+      registerEventHandler =
+        reactPrivateInterface.fabricUIManager.registerEventHandler,
       FabricDiscretePriority =
-        _nativeFabricUIManage.unstable_DiscreteEventPriority,
+        reactPrivateInterface.fabricUIManager.unstable_DiscreteEventPriority,
       FabricContinuousPriority =
-        _nativeFabricUIManage.unstable_ContinuousEventPriority,
-      FabricIdlePriority = _nativeFabricUIManage.unstable_IdleEventPriority,
+        reactPrivateInterface.fabricUIManager.unstable_ContinuousEventPriority,
+      FabricIdlePriority =
+        reactPrivateInterface.fabricUIManager.unstable_IdleEventPriority,
       fabricGetCurrentEventPriority =
-        _nativeFabricUIManage.unstable_getCurrentEventPriority,
+        reactPrivateInterface.fabricUIManager.unstable_getCurrentEventPriority,
       fabricSuspendOnActiveViewTransition =
-        _nativeFabricUIManage.suspendOnActiveViewTransition,
+        reactPrivateInterface.fabricUIManager.suspendOnActiveViewTransition,
       extraDevToolsConfig = {
         getInspectorDataForInstance: getInspectorDataForInstance,
         getInspectorDataForViewAtPoint: function (
@@ -21151,7 +21117,7 @@ __DEV__ &&
           var closestInstance = null;
           (inspectedView =
             reactPrivateInterface.getNodeFromPublicInstance(inspectedView))
-            ? nativeFabricUIManager.findNodeAtPoint(
+            ? reactPrivateInterface.fabricUIManager.findNodeAtPoint(
                 inspectedView,
                 locationX,
                 locationY,
@@ -21181,7 +21147,7 @@ __DEV__ &&
                           .publicInstance,
                       nativeViewTag =
                         internalInstanceHandle.stateNode.canonical.nativeTag;
-                    nativeFabricUIManager.measure(
+                    reactPrivateInterface.fabricUIManager.measure(
                       node,
                       function (x, y, width, height, pageX, pageY) {
                         x = getInspectorDataForInstance(closestInstance);
@@ -21375,14 +21341,14 @@ __DEV__ &&
       onChange: function (from, to, blockNativeResponder) {
         from &&
           from.stateNode &&
-          nativeFabricUIManager.setIsJSResponder(
+          reactPrivateInterface.fabricUIManager.setIsJSResponder(
             from.stateNode.node,
             !1,
             blockNativeResponder || !1
           );
         to &&
           to.stateNode &&
-          nativeFabricUIManager.setIsJSResponder(
+          reactPrivateInterface.fabricUIManager.setIsJSResponder(
             to.stateNode.node,
             !0,
             blockNativeResponder || !1
@@ -21413,10 +21379,10 @@ __DEV__ &&
     (function () {
       var internals = {
         bundleType: 1,
-        version: "19.3.0-native-fb-21c89c9f-20260901",
+        version: "19.3.0-native-fb-07dde64d-20261013",
         rendererPackageName: "react-native-renderer",
         currentDispatcherRef: ReactSharedInternals,
-        reconcilerVersion: "19.3.0-native-fb-21c89c9f-20260901"
+        reconcilerVersion: "19.3.0-native-fb-07dde64d-20261013"
       };
       null !== extraDevToolsConfig &&
         (internals.rendererConfig = extraDevToolsConfig);
@@ -21449,7 +21415,11 @@ __DEV__ &&
     exports.dispatchCommand = function (handle, command, args) {
       handle = reactPrivateInterface.getNodeFromPublicInstance(handle);
       null != handle
-        ? nativeFabricUIManager.dispatchCommand(handle, command, args)
+        ? reactPrivateInterface.fabricUIManager.dispatchCommand(
+            handle,
+            command,
+            args
+          )
         : console.error(
             "dispatchCommand was called with a ref that isn't a native component. Use React.forwardRef to get access to the underlying native component"
           );
@@ -21644,7 +21614,10 @@ __DEV__ &&
     exports.sendAccessibilityEvent = function (handle, eventType) {
       handle = reactPrivateInterface.getNodeFromPublicInstance(handle);
       null != handle
-        ? nativeFabricUIManager.sendAccessibilityEvent(handle, eventType)
+        ? reactPrivateInterface.fabricUIManager.sendAccessibilityEvent(
+            handle,
+            eventType
+          )
         : console.error(
             "sendAccessibilityEvent was called with a ref that isn't a native component. Use React.forwardRef to get access to the underlying native component"
           );
